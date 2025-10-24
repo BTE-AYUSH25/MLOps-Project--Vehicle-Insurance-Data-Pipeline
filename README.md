@@ -1,1 +1,2 @@
-# MLOps-Project--Vehicle-Insurance-Data-Pipeline
+# YT-MLops-Proj1
+This is the first project of our mlops series.
