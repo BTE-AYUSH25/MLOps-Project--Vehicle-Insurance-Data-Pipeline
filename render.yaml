@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: vehicle-ml-app
+    plan: free
+    env: python
+    region: oregon
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port 5000 --workers 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+    healthCheckPath: /
+    autoDeploy: true
+    # Optional but recommended for free tier
+    disk:
+      name: tmp
+      mountPath: /tmp
+      sizeGB: 1

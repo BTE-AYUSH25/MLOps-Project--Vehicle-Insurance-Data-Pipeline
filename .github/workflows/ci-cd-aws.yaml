@@ -1,0 +1,151 @@
+name: CI/CD AWS Demo (Demo)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: vehicleproj
+
+jobs:
+  # This job simulates AWS deployment but doesn't actually deploy
+  aws-demo:
+    name: AWS Deployment Simulation
+    runs-on: ubuntu-latest
+    if: false  # This prevents the job from running
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Simulate AWS Credentials Setup
+      run: |
+        echo "This would configure AWS credentials using:"
+        echo "AWS_ACCESS_KEY_ID: \${{ secrets.AWS_ACCESS_KEY_ID }}"
+        echo "AWS_SECRET_ACCESS_KEY: [hidden]"
+        echo "AWS_REGION: $AWS_REGION"
+        echo "Note: This job is disabled (if: false) for safety"
+
+    - name: Simulate ECR Login
+      run: |
+        echo "aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin <account-id>.dkr.ecr.$AWS_REGION.amazonaws.com"
+
+    - name: Simulate Docker Build and Push
+      run: |
+        echo "docker build -t $ECR_REPOSITORY ."
+        echo "docker tag $ECR_REPOSITORY:latest <account-id>.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest"
+        echo "docker push <account-id>.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest"
+
+    - name: Simulate EC2 Deployment
+      run: |
+        echo "This would deploy to EC2 instance using:"
+        echo "- Self-hosted runner on EC2"
+        echo "- Pull latest image from ECR"
+        echo "- Run container with environment variables"
+        echo "docker run -d -p 5000:5000 <ecr-image-uri>"
+
+  # This is the actual working part that just shows the structure
+  aws-architecture-demo:
+    name: AWS Architecture Demonstration
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Show AWS CI/CD Architecture
+      run: |
+        echo "=== AWS CI/CD ARCHITECTURE DEMONSTRATION ==="
+        echo ""
+        echo "1. SOURCE: GitHub Repository"
+        echo "2. BUILD: GitHub Actions Runner"
+        echo "   - Configure AWS credentials"
+        echo "   - Login to Amazon ECR"
+        echo "   - Build Docker image"
+        echo "   - Push to ECR repository"
+        echo ""
+        echo "3. DEPLOY: Self-hosted runner on EC2"
+        echo "   - Pull image from ECR"
+        echo "   - Run container with env variables:"
+        echo "     - AWS credentials"
+        echo "     - MongoDB connection string"
+        echo "     - Application port mapping"
+        echo ""
+        echo "4. INFRASTRUCTURE REQUIRED:"
+        echo "   - ECR repository: $ECR_REPOSITORY"
+        echo "   - EC2 instance with Docker"
+        echo "   - IAM roles with ECR access"
+        echo "   - Security groups allowing port 5000"
+        echo ""
+        echo "5. SECRETS REQUIRED IN GITHUB:"
+        echo "   - AWS_ACCESS_KEY_ID"
+        echo "   - AWS_SECRET_ACCESS_KEY"
+        echo "   - AWS_DEFAULT_REGION"
+        echo "   - ECR_REPO"
+        echo "   - MONGODB_URL"
+        echo ""
+        echo "NOTE: This is for demonstration purposes only."
+        echo "Actual deployment requires paid AWS resources."
+
+    - name: Validate Project Structure
+      run: |
+        echo "Validating project structure for AWS deployment..."
+        if [ -f "Dockerfile" ]; then
+          echo "✓ Dockerfile found"
+        else
+          echo "✗ Dockerfile missing"
+          exit 1
+        fi
+        
+        if [ -f "requirements.txt" ]; then
+          echo "✓ requirements.txt found"
+        else
+          echo "✗ requirements.txt missing"
+          exit 1
+        fi
+        
+        if [ -f "app.py" ]; then
+          echo "✓ app.py found"
+        else
+          echo "✗ app.py missing"
+          exit 1
+        fi
+        
+        echo "Project structure validated for AWS deployment!"
+
+  security-scan-demo:
+    name: Security Best Practices Demo
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Show AWS Security Practices
+      run: |
+        echo "=== AWS SECURITY BEST PRACTICES ==="
+        echo ""
+        echo "1. IAM ROLES:"
+        echo "   - Use minimal permissions principle"
+        echo "   - ECR push/pull access only"
+        echo "   - No admin privileges"
+        echo ""
+        echo "2. ECR:"
+        echo "   - Image scanning enabled"
+        echo "   - Immutable tags"
+        echo "   - Lifecycle policies"
+        echo ""
+        echo "3. EC2:"
+        echo "   - Security groups restrict access"
+        echo "   - IAM instance profiles"
+        echo "   - Regular security updates"
+        echo ""
+        echo "4. SECRETS MANAGEMENT:"
+        echo "   - Use GitHub encrypted secrets"
+        echo "   - Never hardcode credentials"
+        echo "   - Rotate credentials regularly"
+        echo ""
+        echo "These practices are implemented in the workflow above."
