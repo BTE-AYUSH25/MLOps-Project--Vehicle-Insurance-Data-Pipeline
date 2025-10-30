@@ -1,0 +1,79 @@
+name: CI/CD Pipeline – Render Deployment
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ------------------------
+  # 1. Continuous Integration (build + test)
+  # ------------------------
+  test-and-build:
+    name: Test and Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run basic validation
+      run: |
+        echo "Validating project structure..."
+        python -c "import src; print('✓ Source imports work')"
+        python -c "from src.logger import logging; logging.info('✓ Logger works')"
+        python -c "import app; print('✓ App imports work')"
+        echo "All validations passed!"
+    # ----------------------------------------------------
+    # NEW STEP: Creates the temporary file needed by Render
+    # This file is created in the runner environment only.
+    # ----------------------------------------------------
+    - name: Create .project-root file for Render compatibility
+      run: echo 'src' > .project-root
+      # NOTE: Adjust 'src' to the actual project root Render expects.
+    - name: Build Docker image
+      run: docker build -t vehicle-ml-app .
+
+    - name: Test Docker container
+      run: |
+        docker run -d --name test-container -p 5000:5000 vehicle-ml-app
+        sleep 10
+        docker logs test-container
+        docker stop test-container
+        docker rm test-container
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: .
+        retention-days: 1
+
+  # ------------------------
+  # 2. Continuous Deployment (Render)
+  # ------------------------
+  deploy-to-render:
+    name: Deploy to Render (Production)
+    runs-on: ubuntu-latest
+    needs: test-and-build
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Trigger Render Deploy
+      run: |
+        echo "Triggering Render deployment..."
+        curl -X POST https://api.render.com/v1/services/${{ secrets.RENDER_SERVICE_ID }}/deploys \
+          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+          -H "Accept: application/json"
+        echo "✅ Render deployment triggered successfully!"
